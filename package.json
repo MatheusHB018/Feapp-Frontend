@@ -1,0 +1,8 @@
+{
+  "name": "feapp-netlify-root-build",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix frontend ci --no-audit --no-fund && npm --prefix frontend run build && node -e \"const fs=require('fs');const path=require('path');const copy=(src,dest)=>{const stat=fs.statSync(src);if(stat.isDirectory()){fs.mkdirSync(dest,{recursive:true});for(const name of fs.readdirSync(src)){copy(path.join(src,name),path.join(dest,name));}return;}fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(src,dest);};fs.rmSync('dist',{recursive:true,force:true});copy('frontend/dist','dist');\""
+  }
+}
