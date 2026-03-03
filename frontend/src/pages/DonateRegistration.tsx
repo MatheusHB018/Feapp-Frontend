@@ -64,11 +64,14 @@ const DonateRegistration = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (![200, 201].includes(response.status)) {
         throw new Error(data.message || "Erro ao cadastrar doação");
       }
 
-      toast({ title: "Cadastro enviado", description: "Seu interesse em doar foi registrado com sucesso." });
+      toast({
+        title: "Obrigado!",
+        description: "Sua intenção de doação foi registrada. Entraremos em contato.",
+      });
 
       setFullName("");
       setEmail("");
@@ -78,7 +81,10 @@ const DonateRegistration = () => {
     } catch (error) {
       toast({
         title: "Erro ao enviar",
-        description: error instanceof Error ? error.message : "Tente novamente",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Não conseguimos registrar sua doação agora. Tente novamente em instantes.",
         variant: "destructive",
       });
     } finally {
