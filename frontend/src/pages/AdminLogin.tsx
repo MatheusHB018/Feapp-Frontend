@@ -17,7 +17,7 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   // buscar desafio do backend
-  const loadCaptcha = async () => {
+  const fetchCaptcha = async () => {
     try {
       const res = await fetch(apiUrl("/api/captcha/generate"));
       const data = await res.json();
@@ -30,7 +30,7 @@ const AdminLogin = () => {
   };
 
   useEffect(() => {
-    loadCaptcha();
+    fetchCaptcha();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -94,6 +94,13 @@ const AdminLogin = () => {
         description: error instanceof Error ? error.message : "Tente novamente",
         variant: "destructive",
       });
+      // Em caso de erro no login (captcha incorreto ou outro), recarregar desafio e limpar input
+      try {
+        setCaptchaInput("");
+        fetchCaptcha();
+      } catch (e) {
+        // sem ação adicional
+      }
     } finally {
       setLoading(false);
     }
@@ -143,7 +150,7 @@ const AdminLogin = () => {
                     required
                   />
                   <div className="text-right">
-                    <button type="button" className="text-sm text-primary hover:underline" onClick={loadCaptcha}>
+                    <button type="button" className="text-sm text-primary hover:underline" onClick={fetchCaptcha}>
                       Recarregar desafio
                     </button>
                   </div>
