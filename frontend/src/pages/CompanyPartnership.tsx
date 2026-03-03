@@ -13,6 +13,7 @@ type Association = {
 };
 
 const CompanyPartnership = () => {
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,6 +50,11 @@ const CompanyPartnership = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!recaptchaSiteKey) {
+      alert("Configuração pendente: VITE_RECAPTCHA_SITE_KEY não foi definida.");
+      return;
+    }
 
     if (!recaptchaToken) {
       alert("Por favor, confirme que você não é um robô antes de enviar.");
@@ -151,12 +157,18 @@ const CompanyPartnership = () => {
               <Textarea value={message} onChange={(e) => setMessage(e.target.value)} />
             </div>
 
-            <div className="overflow-x-auto">
-              <ReCAPTCHA
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                onChange={setRecaptchaToken}
-              />
-            </div>
+            {recaptchaSiteKey ? (
+              <div className="overflow-x-auto">
+                <ReCAPTCHA
+                  sitekey={recaptchaSiteKey}
+                  onChange={setRecaptchaToken}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-destructive">
+                reCAPTCHA indisponível: defina VITE_RECAPTCHA_SITE_KEY.
+              </p>
+            )}
 
             <Button type="submit" disabled={loading}>
               {loading ? "Enviando..." : "Cadastrar Parceria"}

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const AdminLogin = () => {
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
@@ -17,6 +18,15 @@ const AdminLogin = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!recaptchaSiteKey) {
+      toast({
+        title: "Configuração pendente",
+        description: "A chave do reCAPTCHA não está configurada neste ambiente.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!recaptchaToken) {
       toast({
@@ -104,12 +114,18 @@ const AdminLogin = () => {
               />
             </div>
 
-            <div className="overflow-x-auto">
-              <ReCAPTCHA
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                onChange={setRecaptchaToken}
-              />
-            </div>
+            {recaptchaSiteKey ? (
+              <div className="overflow-x-auto">
+                <ReCAPTCHA
+                  sitekey={recaptchaSiteKey}
+                  onChange={setRecaptchaToken}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-destructive">
+                reCAPTCHA indisponível: defina VITE_RECAPTCHA_SITE_KEY.
+              </p>
+            )}
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}
