@@ -1,9 +1,11 @@
 import Header from "@/components/Header";
+import EditUser from "@/components/EditUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiUrl } from "@/lib/api";
+import { Pencil } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -68,6 +70,8 @@ const AdminDashboard = () => {
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [loadingPartners, setLoadingPartners] = useState(false);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
 
   const [newAdminName, setNewAdminName] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
@@ -818,7 +822,21 @@ const AdminDashboard = () => {
             ) : (
               admins.map((admin) => (
                 <div key={admin._id} className="rounded-lg border p-3">
-                  <p className="font-medium">{admin.name}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium">{admin.name}</p>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingUserId(admin._id);
+                        setIsEditUserOpen(true);
+                      }}
+                      aria-label={`Editar ${admin.name}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">{admin.email}</p>
                   <p className="text-xs text-muted-foreground">Perfil: {admin.role}</p>
                 </div>
@@ -826,6 +844,16 @@ const AdminDashboard = () => {
             )}
           </div>
         </section>
+
+        <EditUser
+          userId={editingUserId}
+          isOpen={isEditUserOpen}
+          onClose={() => {
+            setIsEditUserOpen(false);
+            setEditingUserId(null);
+          }}
+          onUpdated={fetchAdmins}
+        />
       </div>
     </main>
   );
