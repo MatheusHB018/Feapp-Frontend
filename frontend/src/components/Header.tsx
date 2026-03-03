@@ -15,7 +15,7 @@ const navItems = [
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const hasAdminToken = Boolean(localStorage.getItem("feapp_admin_token"));
-  const adminPath = hasAdminToken ? "/admin/painel" : "/admin/login";
+  const adminPath = hasAdminToken ? "/admin/painel" : "/login";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-lg border-b border-border/50">

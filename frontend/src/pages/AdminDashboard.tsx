@@ -69,6 +69,11 @@ const AdminDashboard = () => {
   const [loadingPartners, setLoadingPartners] = useState(false);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
 
+  const [newAdminName, setNewAdminName] = useState("");
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [registeringAdmin, setRegisteringAdmin] = useState(false);
+
   const [partnerSearch, setPartnerSearch] = useState("");
   const [partnerFilterStatus, setPartnerFilterStatus] = useState<"all" | "active" | "inactive">("all");
 
@@ -127,8 +132,52 @@ const AdminDashboard = () => {
     if (!response.ok || data.role !== "admin") {
       localStorage.removeItem("feapp_admin_token");
       localStorage.removeItem("feapp_admin_user");
-      navigate("/admin/login");
+      navigate("/login");
       throw new Error("Acesso permitido apenas para Admin Geral");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("feapp_admin_token");
+    localStorage.removeItem("feapp_admin_user");
+    navigate("/login");
+  };
+
+  const handleRegisterAdmin = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    try {
+      setRegisteringAdmin(true);
+      const response = await fetch(apiUrl("/api/auth/register-admin"), {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          name: newAdminName,
+          email: newAdminEmail,
+          password: newAdminPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao cadastrar administrador");
+      }
+
+      toast({ title: "Sucesso", description: "Administrador cadastrado com sucesso." });
+      setNewAdminName("");
+      setNewAdminEmail("");
+      setNewAdminPassword("");
+      fetchAdmins();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Falha ao cadastrar administrador",
+        variant: "destructive",
+      });
+    } finally {
+      setRegisteringAdmin(false);
     }
   };
 
@@ -231,7 +280,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (!token) {
-      navigate("/admin/login");
+      navigate("/login");
       return;
     }
 
@@ -434,8 +483,15 @@ const AdminDashboard = () => {
       <Header />
       <div className="container mx-auto px-4 space-y-8">
         <section className="rounded-xl border bg-background p-6 shadow-card">
-          <h1 className="text-2xl font-bold">Painel do Administrador</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Gerencie associações, eventos e administradores disponíveis.</p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Painel do Administrador</h1>
+              <p className="mt-2 text-sm text-muted-foreground">Gerencie associações, eventos e administradores disponíveis.</p>
+            </div>
+            <Button type="button" variant="outline" onClick={handleLogout}>
+              Sair
+            </Button>
+          </div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
@@ -726,7 +782,34 @@ const AdminDashboard = () => {
         </section>
 
         <section className="rounded-xl border bg-background p-6 shadow-card">
-          <h2 className="text-xl font-semibold">Administradores Disponíveis</h2>
+          <h2 className="text-xl font-semibold">Adicionar Administrador</h2>
+          <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={handleRegisterAdmin}>
+            <Input
+              placeholder="Nome"
+              value={newAdminName}
+              onChange={(e) => setNewAdminName(e.target.value)}
+              required
+            />
+            <Input
+              type="email"
+              placeholder="E-mail"
+              value={newAdminEmail}
+              onChange={(e) => setNewAdminEmail(e.target.value)}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Senha"
+              value={newAdminPassword}
+              onChange={(e) => setNewAdminPassword(e.target.value)}
+              required
+            />
+            <Button type="submit" disabled={registeringAdmin}>
+              {registeringAdmin ? "Salvando..." : "Cadastrar"}
+            </Button>
+          </form>
+
+          <h3 className="mt-8 text-xl font-semibold">Administradores Disponíveis</h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {loadingAdmins ? (
               <p className="text-sm text-muted-foreground">Carregando...</p>

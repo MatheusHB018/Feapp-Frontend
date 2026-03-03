@@ -11,6 +11,8 @@ import DonateRegistration from "./pages/DonateRegistration";
 import CompanyPartnership from "./pages/CompanyPartnership";
 import AdminDashboard from "./pages/AdminDashboard";
 import Partners from "./pages/Partners";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -24,8 +26,11 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/entidades" element={<Entities />} />
           <Route path="/parceiros" element={<Partners />} />
+          <Route path="/login" element={<AdminLogin />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/painel" element={<AdminDashboard />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/quero-doar" element={<DonateRegistration />} />
           <Route path="/parceria-empresa" element={<CompanyPartnership />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
