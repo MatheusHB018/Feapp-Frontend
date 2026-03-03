@@ -50,21 +50,38 @@ const AdminLogin = () => {
 
     try {
       setLoading(true);
+      const payload = {
+        email,
+        password,
+        // enviar como string — alguns backends aceitam e fazem parse; evita enviar null se Number() for NaN
+        captchaAnswer: captchaInput,
+        captchaHash: captchaData.hash,
+      };
+
+      // debug: mostrar o payload que será enviado
+      // (remova console.logs em produção)
+      // eslint-disable-next-line no-console
+      console.log("Login payload:", payload);
+
       const loginResponse = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          captchaAnswer: Number(captchaInput),
-          captchaHash: captchaData.hash,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const loginData = await loginResponse.json();
+      let loginData: any = null;
+      try {
+        loginData = await loginResponse.json();
+      } catch (e) {
+        // caso a resposta não seja JSON
+        // eslint-disable-next-line no-console
+        console.error("Login response not JSON", await loginResponse.text());
+      }
 
       if (!loginResponse.ok) {
-        throw new Error(loginData.message || "Falha no login");
+        // eslint-disable-next-line no-console
+        console.error("Login failed", loginResponse.status, loginData);
+        throw new Error(loginData?.message || "Falha no login");
       }
 
       const token = loginData.token as string;
