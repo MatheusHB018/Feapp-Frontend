@@ -3,37 +3,48 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiUrl } from "@/lib/api";
-import ReCAPTCHA from "react-google-recaptcha";
-import { useState } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const AdminLogin = () => {
-  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  // captcha do backend: { question: string, hash: string }
+  const [captchaData, setCaptchaData] = useState<{ question: string; hash: string } | null>(null);
+  const [captchaInput, setCaptchaInput] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  // buscar desafio do backend
+  const loadCaptcha = async () => {
+    try {
+      const res = await fetch(apiUrl("/api/captcha/generate"));
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Erro ao gerar desafio");
+      setCaptchaData(data);
+      setCaptchaInput("");
+    } catch (error) {
+      toast({ title: "Erro ao carregar desafio", description: error instanceof Error ? error.message : "Tente novamente", variant: "destructive" });
+    }
+  };
+
+  useEffect(() => {
+    loadCaptcha();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (!recaptchaSiteKey) {
-      toast({
-        title: "Configuração pendente",
-        description: "A chave do reCAPTCHA não está configurada neste ambiente.",
-        variant: "destructive",
-      });
+    // validação simples do captcha
+    if (!captchaData) {
+      toast({ title: "Desafio indisponível", description: "Não foi possível carregar o desafio. Tente recarregar.", variant: "destructive" });
       return;
     }
 
-    if (!recaptchaToken) {
-      toast({
-        title: "Confirmação necessária",
-        description: "Confirme que você não é um robô para continuar.",
-        variant: "destructive",
-      });
+    if (captchaInput.trim() === "") {
+      toast({ title: "Resposta necessária", description: "Digite a resposta do desafio para continuar.", variant: "destructive" });
       return;
     }
 
@@ -42,7 +53,12 @@ const AdminLogin = () => {
       const loginResponse = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, recaptchaToken }),
+        body: JSON.stringify({
+          email,
+          password,
+          captchaAnswer: Number(captchaInput),
+          captchaHash: captchaData.hash,
+        }),
       });
 
       const loginData = await loginResponse.json();
@@ -114,18 +130,28 @@ const AdminLogin = () => {
               />
             </div>
 
-            {recaptchaSiteKey ? (
-              <div className="overflow-x-auto">
-                <ReCAPTCHA
-                  sitekey={recaptchaSiteKey}
-                  onChange={setRecaptchaToken}
-                />
-              </div>
-            ) : (
-              <p className="text-sm text-destructive">
-                reCAPTCHA indisponível: defina VITE_RECAPTCHA_SITE_KEY.
-              </p>
-            )}
+            <div>
+              <label className="mb-2 block text-sm font-medium">Desafio</label>
+              {captchaData ? (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">{captchaData.question}</div>
+                  <Input
+                    type="number"
+                    value={captchaInput}
+                    onChange={(e) => setCaptchaInput(e.target.value)}
+                    placeholder="Resposta"
+                    required
+                  />
+                  <div className="text-right">
+                    <button type="button" className="text-sm text-primary hover:underline" onClick={loadCaptcha}>
+                      Recarregar desafio
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Carregando desafio...</p>
+              )}
+            </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}
