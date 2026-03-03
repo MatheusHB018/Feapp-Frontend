@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiUrl } from "@/lib/api";
+import ReCAPTCHA from "react-google-recaptcha";
 import { useEffect, useState } from "react";
 
 type Association = {
@@ -17,6 +18,7 @@ const DonateRegistration = () => {
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [associationId, setAssociationId] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [associations, setAssociations] = useState<Association[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -47,6 +49,11 @@ const DonateRegistration = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    if (!recaptchaToken) {
+      alert("Por favor, confirme que você não é um robô antes de enviar.");
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(apiUrl("/api/support-requests"), {
@@ -59,6 +66,7 @@ const DonateRegistration = () => {
           phone,
           associationId,
           message,
+          recaptchaToken,
         }),
       });
 
@@ -78,6 +86,7 @@ const DonateRegistration = () => {
       setPhone("");
       setMessage("");
       setAssociationId("");
+      setRecaptchaToken(null);
     } catch (error) {
       toast({
         title: "Erro ao enviar",
@@ -137,6 +146,13 @@ const DonateRegistration = () => {
             <div>
               <label className="mb-2 block text-sm font-medium">Mensagem (opcional)</label>
               <Textarea value={message} onChange={(e) => setMessage(e.target.value)} />
+            </div>
+
+            <div className="overflow-x-auto">
+              <ReCAPTCHA
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                onChange={setRecaptchaToken}
+              />
             </div>
 
             <Button type="submit" disabled={loading}>

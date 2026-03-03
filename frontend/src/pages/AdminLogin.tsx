@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiUrl } from "@/lib/api";
+import ReCAPTCHA from "react-google-recaptcha";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -16,12 +18,21 @@ const AdminLogin = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    if (!recaptchaToken) {
+      toast({
+        title: "Confirmação necessária",
+        description: "Confirme que você não é um robô para continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const loginResponse = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, recaptchaToken }),
       });
 
       const loginData = await loginResponse.json();
@@ -90,6 +101,13 @@ const AdminLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="********"
                 required
+              />
+            </div>
+
+            <div className="overflow-x-auto">
+              <ReCAPTCHA
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                onChange={setRecaptchaToken}
               />
             </div>
 
