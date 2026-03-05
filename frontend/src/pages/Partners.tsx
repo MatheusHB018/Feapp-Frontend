@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { Building2, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import Header from '@/components/Header';
 import { apiUrl } from '@/lib/api';
@@ -81,9 +81,13 @@ const Partners = () => {
               <Dialog open={selected === i} onOpenChange={(open) => setSelected(open ? i : null)}>
                 <DialogTrigger asChild>
                   <div className={`group bg-background border border-border rounded-xl p-4 text-center ${hoverAccents[i % hoverAccents.length]} hover:shadow transition-all cursor-pointer`}>
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full mx-auto flex items-center justify-center mb-2"> 
-                      <span className="text-sm font-semibold text-primary">{partner.name.split(' ')[0]}</span>
-                    </div>
+                    {partner.logoUrl ? (
+                      <img src={partner.logoUrl} alt={partner.name} className="w-12 h-12 object-contain mx-auto mb-2" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-2 flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-primary" />
+                      </div>
+                    )}
                     <p className="text-sm font-semibold text-foreground">{partner.name}</p>
                     <span className="text-xs text-muted-foreground mt-1 inline-block">{(partner.sectors || []).join(', ') || 'Parceiro'}</span>
                   </div>

@@ -1,6 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { Heart } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Dialog,
@@ -97,7 +97,9 @@ const PartnersSection = () => {
                     {partner.logoUrl ? (
                       <img src={partner.logoUrl} alt={partner.name} className="w-12 h-12 object-contain mx-auto mb-2" />
                     ) : (
-                      <Heart className="w-6 h-6 text-muted-foreground mx-auto mb-2 group-hover:text-primary" />
+                      <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-2 flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-primary" />
+                      </div>
                     )}
                     <p className="text-sm font-semibold text-foreground leading-tight">{partner.name}</p>
                     <span className="text-xs text-muted-foreground mt-1 inline-block">{(partner.sectors || []).join(', ') || 'Parceiro'}</span>
