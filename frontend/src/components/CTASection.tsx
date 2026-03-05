@@ -12,9 +12,10 @@ const CTASection = () => {
       icon: HandHeart,
       title: "Seja um Voluntário",
       description:
-        "Doe seu tempo e talento. Entre em contato por e-mail e faça parte da nossa equipe.",
-      cta: "Fale Conosco",
-      href: "mailto:matheusbispo925@gmail.com?subject=Quero%20ser%20volunt%C3%A1rio%20na%20FEAPP",
+        "Doe seu tempo e talento. Preencha a ficha e faça parte da nossa equipe.",
+      cta: "Cadastrar Voluntário",
+      href: "/seja-voluntario",
+      isInternal: true,
     },
     {
       icon: QrCode,

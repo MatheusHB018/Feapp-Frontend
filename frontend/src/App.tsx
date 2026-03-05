@@ -14,6 +14,7 @@ import Partners from "./pages/Partners";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Pessoas from "./pages/Pessoas";
+import VolunteerRegistration from "./pages/VolunteerRegistration";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/quero-doar" element={<DonateRegistration />} />
+          <Route path="/seja-voluntario" element={<VolunteerRegistration />} />
           <Route path="/parceria-empresa" element={<CompanyPartnership />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
