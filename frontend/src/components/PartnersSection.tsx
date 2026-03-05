@@ -12,7 +12,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { apiUrl } from "@/lib/api";
-import { partners as staticPartners } from "@/data/partners";
 
 type Partner = {
   _id?: string;
@@ -39,21 +38,27 @@ const PartnersSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const [selected, setSelected] = useState<number | null>(null);
-  const [partners, setPartners] = useState<Partner[]>(staticPartners);
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPartners = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
         const response = await fetch(apiUrl("/api/partners/public"));
         const data = await response.json();
 
         if (!response.ok) throw new Error(data.message || "Erro ao carregar parceiros");
 
-        if (data.data && data.data.length > 0) {
-          setPartners(data.data);
-        }
-      } catch {
-        // Mantém os dados estáticos em caso de erro
+        setPartners(Array.isArray(data.data) ? data.data : []);
+      } catch (fetchError) {
+        setPartners([]);
+        setError(fetchError instanceof Error ? fetchError.message : "Falha ao carregar parceiros");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -79,6 +84,9 @@ const PartnersSection = () => {
             Empresas que apoiam a FEAPP com patrocínio, estrutura e divulgação — conheça algumas das parceiras.
           </p>
         </motion.div>
+
+        {loading && <p className="text-center text-sm text-muted-foreground mb-6">Carregando parceiros...</p>}
+        {!loading && error && <p className="text-center text-sm text-destructive mb-6">{error}</p>}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
           {featured.map((partner, i) => (

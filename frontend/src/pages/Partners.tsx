@@ -3,8 +3,20 @@ import { useEffect, useRef, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import Header from '@/components/Header';
-import { partners as staticPartners, Partner as PartnerType } from '@/data/partners';
 import { apiUrl } from '@/lib/api';
+
+type PartnerType = {
+  _id?: string;
+  id?: string;
+  name: string;
+  website?: string;
+  logoUrl?: string;
+  description?: string;
+  sectors?: string[];
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+};
 
 const hoverAccents = new Array(12).fill('hover:border-magenta/40');
 
@@ -13,22 +25,29 @@ const Partners = () => {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
   const [selected, setSelected] = useState<number | null>(null);
   const [partners, setPartners] = useState<PartnerType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPartners = async () => {
-      try {
-        // Tenta buscar de uma API pública de parceiros — se não existir, usa dados estáticos
-        const response = await fetch(apiUrl('/api/partners/public'));
-        if (response.ok) {
-          const data = await response.json();
-          setPartners(data.data || []);
-          return;
-        }
-      } catch {
-        // ignore
-      }
+      setLoading(true);
+      setError(null);
 
-      setPartners(staticPartners);
+      try {
+        const response = await fetch(apiUrl('/api/partners/public'));
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Erro ao carregar parceiros');
+        }
+
+        setPartners(Array.isArray(data.data) ? data.data : []);
+      } catch (fetchError) {
+        setPartners([]);
+        setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar parceiros');
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchPartners();
@@ -50,9 +69,15 @@ const Partners = () => {
           <p className="mt-2 text-muted-foreground">Conheça as empresas que apoiam e potencializam o trabalho das entidades.</p>
         </motion.header>
 
+        {loading && <p className="text-center text-sm text-muted-foreground mb-6">Carregando parceiros...</p>}
+        {!loading && error && <p className="text-center text-sm text-destructive mb-6">{error}</p>}
+        {!loading && !error && remainingPartners.length === 0 && (
+          <p className="text-center text-sm text-muted-foreground mb-6">Nenhuma empresa parceira encontrada.</p>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {remainingPartners.map((partner, i) => (
-            <motion.div key={partner.id} initial={{ opacity: 0, scale: 0.98 }} animate={isInView ? { opacity: 1, scale: 1 } : {}} transition={{ delay: i * 0.03 }}>
+            <motion.div key={partner._id ?? partner.id ?? i} initial={{ opacity: 0, scale: 0.98 }} animate={isInView ? { opacity: 1, scale: 1 } : {}} transition={{ delay: i * 0.03 }}>
               <Dialog open={selected === i} onOpenChange={(open) => setSelected(open ? i : null)}>
                 <DialogTrigger asChild>
                   <div className={`group bg-background border border-border rounded-xl p-4 text-center ${hoverAccents[i % hoverAccents.length]} hover:shadow transition-all cursor-pointer`}>
